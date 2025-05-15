@@ -4,7 +4,6 @@ from bson.objectid import ObjectId
 from bson.errors import InvalidId
 from datetime import datetime, timedelta
 
-
 gula_bp = Blueprint("gula", __name__)
 
 def validate_gula_payload(data):
@@ -47,6 +46,7 @@ def tambah_gula():
         }
         result = db.riwayat_gula.insert_one(item)
         item["_id"] = str(result.inserted_id)
+        item["user_id"] = str(item["user_id"])  # ← FIX INI
         return jsonify({"success": True, "message": "Data berhasil ditambahkan", "data": item}), 201
     except Exception as e:
         return jsonify({"success": False, "message": f"Gagal menambahkan data: {str(e)}"}), 400

@@ -30,7 +30,7 @@ class UserModel:
             update_data["password"] = generate_password_hash(updates["password"]).decode("utf-8")
 
         if not update_data:
-            return 0  # Tidak ada perubahan
+            return 0  
 
         result = self.collection.update_one(
             {"_id": ObjectId(user_id)},

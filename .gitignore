@@ -1,16 +1,28 @@
-# Python
+# Python cache & build
 __pycache__/
 *.py[cod]
 *.egg-info/
 
-# Virtual Environment
+# Virtual environments
 venv/
 ENV/
 env/
 .venv/
 
-# Environment files
+# Environment file
 .env
 
-# VSCode
+# VSCode local settings
 .vscode/
+
+# Windows stuff
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Log files (opsional tapi bagus)
+*.log
+
+# Backup or temp files
+*.bak
+*.tmp
