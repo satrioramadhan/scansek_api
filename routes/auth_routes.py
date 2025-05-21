@@ -1,7 +1,13 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import create_refresh_token, create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import (
+    create_refresh_token,
+    create_access_token,
+    jwt_required,
+    get_jwt_identity,
+)
 from bson.objectid import ObjectId
 import re
+import requests  # buat verifikasi Google ID token
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -89,3 +95,51 @@ def update_profile():
         return jsonify({"success": True, "message": "Profil berhasil diperbarui."}), 200
     except Exception as e:
         return jsonify({"success": False, "message": f"Gagal update profil: {str(e)}"}), 400
+
+@auth_bp.route("/google-login", methods=["POST"])
+def google_login():
+    data = request.json
+    id_token = data.get("id_token")
+
+    if not id_token:
+        return jsonify({"success": False, "message": "id_token tidak ditemukan"}), 400
+
+    # Verifikasi token ke Google
+    google_url = "https://oauth2.googleapis.com/tokeninfo"
+    try:
+        resp = requests.get(google_url, params={"id_token": id_token}, timeout=5)
+        info = resp.json()
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Token tidak valid: {str(e)}"}), 400
+
+    if "email" not in info:
+        return jsonify({"success": False, "message": "Token Google tidak valid"}), 401
+
+    email = info["email"]
+    username = info.get("name", "Pengguna Google")
+
+    user = user_model.find_by_email(email)
+
+    if not user:
+        # Auto register user Google
+        user_id = user_model.insert_user(email, username, None)
+        user_id = str(user_id)  # WAJIB diubah ke string sebelum masuk ke JWT
+        user = user_model.find_by_email(email)
+    else:
+        user_id = str(user["_id"])
+
+    access_token = create_access_token(identity=user_id)
+    refresh_token = create_refresh_token(identity=user_id)
+
+    return jsonify({
+        "success": True,
+        "message": "Login Google berhasil",
+        "data": {
+            "token": access_token,
+            "refresh_token": refresh_token,
+            "user": {
+                "username": user.get("username", "Pengguna"),
+                "email": user.get("email")
+            }
+        }
+    }), 200

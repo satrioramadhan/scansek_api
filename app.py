@@ -5,7 +5,7 @@ from flask_bcrypt import Bcrypt
 from config import Config
 from routes.auth_routes import auth_bp, init_auth_routes
 from routes.gula_routes import gula_bp
-from routes.air_routes import air_bp  # ✅ Tambahkan ini
+from routes.air_routes import air_bp
 from models.user_model import UserModel
 
 jwt = JWTManager()
@@ -27,10 +27,15 @@ def create_app():
     user_model_instance = UserModel(mongo.db)
     init_auth_routes(user_model_instance, bcrypt)
 
-    # ✅ Register semua blueprint
+    # ✅ Register semua blueprint dengan prefix /api
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(gula_bp, url_prefix="/api")
-    app.register_blueprint(air_bp, url_prefix="/api")  # ✅ Tambah ini
+    app.register_blueprint(air_bp, url_prefix="/api")
+
+    # ✅ Tambahkan route untuk /api/
+    @app.route("/api/")
+    def api_root():
+        return "ScanSek API Root 🧪"
 
     # ✅ Index MongoDB
     mongo.db.riwayat_gula.create_index([
@@ -46,8 +51,10 @@ def create_app():
     def index():
         return "ScanSek API Online 😎"
 
+    print("REFRESH TOKEN EXPIRE:", app.config.get("JWT_REFRESH_TOKEN_EXPIRES"))
     return app
 
 if __name__ == "__main__":
     app = create_app()
     app.run(debug=True)
+
