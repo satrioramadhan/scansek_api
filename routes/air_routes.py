@@ -10,7 +10,7 @@ air_bp = Blueprint("air", __name__)
 def get_riwayat_air():
     db = request.mongo.db
     user_id = get_jwt_identity()
-    tanggal = request.args.get("tanggal")  # Format: YYYY-MM-DD
+    tanggal = request.args.get("tanggal")
 
     if not tanggal:
         return jsonify({"success": False, "message": "Tanggal harus diisi"}), 400

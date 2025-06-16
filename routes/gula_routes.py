@@ -12,11 +12,12 @@ def validate_gula_payload(data):
         jumlah = int(data.get("jumlahBungkus", 0))
         total = float(data.get("totalGula", 0))
         sendok = float(data.get("sendokTeh", 0))
+        sendok_makan = float(data.get("sendokMakan", 0))  # 🔥 Tambahan validasi sendok makan
 
         if gula <= 0 or jumlah <= 0:
-            return False, "Gula per bungkus dan jumlah bungkus harus lebih dari 0"
-        if total <= 0 or sendok <= 0:
-            return False, "Total gula dan konversi sendok teh harus lebih dari 0"
+            return False, "Gula per item dan jumlah item harus lebih dari 0"
+        if total <= 0 or sendok <= 0 or sendok_makan <= 0:
+            return False, "Total gula, sendok teh, dan sendok makan harus lebih dari 0"
         return True, ""
     except Exception:
         return False, "Input tidak valid (harus angka)"
@@ -42,11 +43,12 @@ def tambah_gula():
             "isiPerBungkus": data.get("isiPerBungkus"),
             "totalGula": data["totalGula"],
             "sendokTeh": data["sendokTeh"],
+            "sendokMakan": data["sendokMakan"],  # 🔥 Tambahan field sendok makan
             "waktuInput": data.get("waktuInput", datetime.utcnow().isoformat())
         }
         result = db.riwayat_gula.insert_one(item)
         item["_id"] = str(result.inserted_id)
-        item["user_id"] = str(item["user_id"])  # ← FIX INI
+        item["user_id"] = str(item["user_id"])
         return jsonify({"success": True, "message": "Data berhasil ditambahkan", "data": item}), 201
     except Exception as e:
         return jsonify({"success": False, "message": f"Gagal menambahkan data: {str(e)}"}), 400
@@ -108,7 +110,8 @@ def update_gula(id):
             "jumlahBungkus": data["jumlahBungkus"],
             "isiPerBungkus": data.get("isiPerBungkus"),
             "totalGula": data["totalGula"],
-            "sendokTeh": data["sendokTeh"]
+            "sendokTeh": data["sendokTeh"],
+            "sendokMakan": data["sendokMakan"],  # 🔥 Update field sendok makan
         }}
 
         result = db.riwayat_gula.update_one(query, update)
